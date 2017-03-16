@@ -36,7 +36,7 @@ return [
     |
     */
 
-    'timeout' => 10,
+    'timeout' => 25,
 
     /*
     |--------------------------------------------------------------------------
@@ -74,7 +74,7 @@ return [
     */
 
     'command_line_options' => [
-        //'--ignore-ssl-errors=true',
+        '--ignore-ssl-errors=true',
         //'--debug=true',
     ]
 

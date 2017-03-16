@@ -65,6 +65,16 @@ class PdfGenerator
             ->deleteFileAfterSend(true);
     }
 
+    public function createFromUrl($url, $filename)
+    {
+	$this->generateFilePaths();
+        $this->generatePdfFromUrl($url);
+
+	return (new BinaryFileResponse($this->pdfPath))
+            ->setContentDisposition('attachment', $filename)
+            ->deleteFileAfterSend(true);
+    }
+
     /**
      * Save a PDF file to the disk
      * @param string|object $view
@@ -115,7 +125,6 @@ class PdfGenerator
     {
         $view = $this->viewToString($view);
         $this->saveHtml($view);
-
         $command = implode(' ', [
             $this->getBinaryPath(),
             implode(' ', $this->commandLineOptions),
@@ -134,6 +143,28 @@ class PdfGenerator
 
         // Remove temporary html file
         @unlink($this->htmlPath);
+    }
+
+    protected function generatePdfFromUrl($url)
+    {
+        $command = implode(' ', [
+     	    $this->getBinaryPath(),
+            implode(' ', $this->commandLineOptions),
+            $this->convertScript,
+            $url,
+            $this->pdfPath
+        ]);
+
+        $process = new Process($command, __DIR__);
+        $process->setTimeout($this->timeout);
+        $process->run();
+
+        if ($errorOutput = $process->getErrorOutput()) {
+     	    throw new RuntimeException('PhantomJS: ' . $errorOutput);
+        }
+
+        // Remove temporary html file
+        //@unlink($this->htmlPath);
     }
 
     /**
@@ -258,3 +289,4 @@ class PdfGenerator
         $this->convertScript = $path;
     }
 }
+

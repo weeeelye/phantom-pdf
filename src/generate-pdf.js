@@ -1,3 +1,4 @@
+"use strict";
 var fs = require('fs'),
     args = require('system').args,
     page = require('webpage').create();
@@ -9,8 +10,10 @@ page.open(args[1], function (status) {
         console.log('Unable to load the file!');
         phantom.exit(1);
     } else {
-
-        page.render(args[2]);
-        phantom.exit(0);
+	window.setTimeout(function () {
+            page.render(args[2]);
+            phantom.exit(0);
+        }, 10000);
     }
 });
+
