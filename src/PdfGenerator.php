@@ -47,7 +47,7 @@ class PdfGenerator
     /**
      * @var string
      */
-    protected $convertScript = 'generate-pdf.js';
+    protected $convertScript;
 
     /**
      * Create a PDF from a view or string
@@ -128,7 +128,7 @@ class PdfGenerator
         $command = implode(' ', [
             $this->getBinaryPath(),
             implode(' ', $this->commandLineOptions),
-            $this->convertScript,
+            $this->getScriptPath(),
             $this->prefixHtmlPath($this->htmlPath),
             $this->pdfPath
         ]);
@@ -150,7 +150,7 @@ class PdfGenerator
         $command = implode(' ', [
      	    $this->getBinaryPath(),
             implode(' ', $this->commandLineOptions),
-            $this->convertScript,
+            $this->getScriptPath(),
             $url,
             $this->pdfPath
         ]);
@@ -287,6 +287,19 @@ class PdfGenerator
     public function useScript($path)
     {
         $this->convertScript = $path;
+    }
+
+    /**
+     * Get the binary path
+     * @return string
+     */
+    public function getScriptPath()
+    {
+        if (is_null($this->convertScript)) {
+            return __DIR__ . '/generate-pdf.js';
+        }
+
+        return $this->convertScript;
     }
 }
 
