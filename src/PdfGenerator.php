@@ -65,10 +65,10 @@ class PdfGenerator
             ->deleteFileAfterSend(true);
     }
 
-    public function createFromUrl($url, $filename)
+    public function createFromUrl($url, $filename, $timezone="UTC")
     {
 	$this->generateFilePaths();
-        $this->generatePdfFromUrl($url);
+        $this->generatePdfFromUrl($url, $timezone);
 
 	return (new BinaryFileResponse($this->pdfPath))
             ->setContentDisposition('attachment', $filename)
@@ -145,8 +145,13 @@ class PdfGenerator
         @unlink($this->htmlPath);
     }
 
-    protected function generatePdfFromUrl($url)
+    protected function generatePdfFromUrl($url, $timezone="UTC")
     {
+	if(!in_array($timezone, timezone_identifiers_list()))
+	{
+		$timezone = "UTC";	
+	}
+
         $command = implode(' ', [
      	    $this->getBinaryPath(),
             implode(' ', $this->commandLineOptions),
@@ -155,7 +160,7 @@ class PdfGenerator
             $this->pdfPath
         ]);
 
-        $process = new Process($command, __DIR__);
+        $process = new Process($command, __DIR__, array("TZ"=>$timezone));
         $process->setTimeout($this->timeout);
         $process->run();
 
