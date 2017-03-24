@@ -47,7 +47,7 @@ class PdfGenerator
     /**
      * @var string
      */
-    protected $convertScript = 'generate-pdf.js';
+    protected $convertScript;
 
     /**
      * Create a PDF from a view or string
@@ -65,10 +65,10 @@ class PdfGenerator
             ->deleteFileAfterSend(true);
     }
 
-    public function createFromUrl($url, $filename)
+    public function createFromUrl($url, $filename, $timezone="UTC")
     {
 	$this->generateFilePaths();
-        $this->generatePdfFromUrl($url);
+        $this->generatePdfFromUrl($url, $timezone);
 
 	return (new BinaryFileResponse($this->pdfPath))
             ->setContentDisposition('attachment', $filename)
@@ -128,7 +128,7 @@ class PdfGenerator
         $command = implode(' ', [
             $this->getBinaryPath(),
             implode(' ', $this->commandLineOptions),
-            $this->convertScript,
+            $this->getScriptPath(),
             $this->prefixHtmlPath($this->htmlPath),
             $this->pdfPath
         ]);
@@ -145,17 +145,22 @@ class PdfGenerator
         @unlink($this->htmlPath);
     }
 
-    protected function generatePdfFromUrl($url)
+    protected function generatePdfFromUrl($url, $timezone="UTC")
     {
+	if(!in_array($timezone, timezone_identifiers_list()))
+	{
+		$timezone = "UTC";	
+	}
+
         $command = implode(' ', [
      	    $this->getBinaryPath(),
             implode(' ', $this->commandLineOptions),
-            $this->convertScript,
+            $this->getScriptPath(),
             $url,
             $this->pdfPath
         ]);
 
-        $process = new Process($command, __DIR__);
+        $process = new Process($command, __DIR__, array("TZ"=>$timezone));
         $process->setTimeout($this->timeout);
         $process->run();
 
@@ -287,6 +292,19 @@ class PdfGenerator
     public function useScript($path)
     {
         $this->convertScript = $path;
+    }
+
+    /**
+     * Get the binary path
+     * @return string
+     */
+    public function getScriptPath()
+    {
+        if (is_null($this->convertScript)) {
+            return __DIR__ . '/generate-pdf.js';
+        }
+
+        return $this->convertScript;
     }
 }
 
